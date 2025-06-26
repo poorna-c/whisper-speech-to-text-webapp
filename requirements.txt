@@ -1,0 +1,6 @@
+Flask==2.3.2
+numpy==2.2.0
+openai-whisper==20250625
+pydub==latest
+sounddevice==0.5.2
+scipy==1.16.0

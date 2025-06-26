@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Whisper Speech to Text with History</title>
+
+  <!-- Bootstrap CSS CDN -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <style>
+    body {
+      padding: 2rem;
+      background: #f8f9fa;
+    }
+    #history {
+      max-height: 300px;
+      overflow-y: auto;
+      background: white;
+      border: 1px solid #dee2e6;
+      padding: 1rem;
+      border-radius: 0.375rem;
+    }
+    .transcription-new {
+      background-color: #d1e7dd;
+      padding: 1rem;
+      border-radius: 0.375rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .transcription-old {
+      border-bottom: 1px solid #dee2e6;
+      padding: 0.5rem 0;
+      font-size: 0.95rem;
+      color: #495057;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="mb-4">Whisper Speech to Text (English)</h1>
+
+    <div class="mb-3">
+      <button id="recordBtn" class="btn btn-primary">Start Recording</button>
+      <span id="status" class="ms-3 text-muted">Click to start recording...</span>
+    </div>
+
+    <div id="currentTranscription" class="transcription-new" style="display:none;"></div>
+
+    <h5>History</h5>
+    <div id="history" class="mb-5"></div>
+  </div>
+
+<script>
+  let recordBtn = document.getElementById("recordBtn");
+  let status = document.getElementById("status");
+  let currentTranscriptionEl = document.getElementById("currentTranscription");
+  let historyEl = document.getElementById("history");
+
+  let mediaRecorder;
+  let audioChunks = [];
+  let history = [];
+
+  function addToHistory(text) {
+    if (!text.trim()) return;
+
+    // Add new transcription at the top visually
+    currentTranscriptionEl.style.display = "block";
+    currentTranscriptionEl.textContent = text;
+
+    // Add old transcription below and keep scroll
+    if (history.length === 0) {
+      // First time, just append old text below current
+      let div = document.createElement("div");
+      div.className = "transcription-old";
+      div.textContent = text;
+      historyEl.appendChild(div);
+    } else {
+      // For subsequent, append new old transcription at bottom
+      let div = document.createElement("div");
+      div.className = "transcription-old";
+      div.textContent = text;
+      historyEl.appendChild(div);
+      // Scroll to bottom so newest old is visible
+      historyEl.scrollTop = historyEl.scrollHeight;
+    }
+
+    history.push(text);
+  }
+
+  recordBtn.onclick = async () => {
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      mediaRecorder.stop();
+      recordBtn.textContent = "Start Recording";
+      status.textContent = "Stopped recording.";
+    } else {
+      audioChunks = [];
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable = (e) => {
+        audioChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        status.textContent = "Processing audio...";
+        let audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+
+        let reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async () => {
+          let base64data = reader.result;
+          const response = await fetch("/transcribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ audio: base64data }),
+          });
+          const data = await response.json();
+
+          addToHistory(data.transcription);
+          status.textContent = "Transcription complete.";
+        };
+      };
+
+      mediaRecorder.start();
+      recordBtn.textContent = "Stop Recording";
+      status.textContent = "Recording...";
+    }
+  };
+</script>
+
+</body>
+</html>
