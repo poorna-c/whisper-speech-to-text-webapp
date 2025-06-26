@@ -40,23 +40,23 @@ _(Add a screenshot or demo link here if available)_
 
 ## Installation
 
-1. Clone the repository:
+### 1. Clone the repository:
 
 git clone https://github.com/poorna-c/whisper-speech-to-text-webapp.git
 cd whisper-speech-to-text-webapp
 
 
-2. Create and activate a virtual environment (recommended):
+### 2. Create and activate a virtual environment (recommended):
 python -m venv venv
-### Windows
+#### Windows
 venv\Scripts\activate
-### macOS/Linux
+#### macOS/Linux
 source venv/bin/activate
 
-## 3. Install Python dependencies:
+### 3. Install Python dependencies:
 pip install -r requirements.txt
 
-## 4. Ensure ffmpeg is installed and accessible:
+### 4. Ensure ffmpeg is installed and accessible:
 
 Windows: Download from https://ffmpeg.org/download.html and add to PATH
 
