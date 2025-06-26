@@ -53,10 +53,10 @@ venv\Scripts\activate
 ### macOS/Linux
 source venv/bin/activate
 
-3. Install Python dependencies:
+## 3. Install Python dependencies:
 pip install -r requirements.txt
 
-4. Ensure ffmpeg is installed and accessible:
+## 4. Ensure ffmpeg is installed and accessible:
 
 Windows: Download from https://ffmpeg.org/download.html and add to PATH
 
